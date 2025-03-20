@@ -3,108 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>pphaibot - AI ချက်တင်း</title>
+    <title>Walone Voice Chat</title>
     <style>
-        .chat-container {
-            width: 90%;
-            max-width: 500px;
-            margin: 20px auto;
-            border: 1px solid #ccc;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
             padding: 20px;
-            background-color: #f9f9f9;
+            background-color: #f4f4f4;
+        }
+        .chat-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
             border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         .chat-box {
             height: 300px;
+            overflow-y: auto;
             border: 1px solid #ddd;
-            overflow-y: scroll;
             padding: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
+            background: #fafafa;
         }
         .input-area {
             display: flex;
-        }
-        input {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            gap: 10px;
         }
         button {
-            padding: 8px 15px;
-            background-color: #4CAF50;
+            padding: 10px 20px;
+            background-color: #007bff;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #0056b3;
+        }
+        #startVoice {
+            background-color: #28a745;
+        }
+        #startVoice:hover {
+            background-color: #218838;
         }
     </style>
 </head>
 <body>
-    <h1>pphaibot မှ ကြိုဆိုပါတယ်</h1>
     <div class="chat-container">
+        <h1>Walone Voice Chat</h1>
         <div class="chat-box" id="chatBox">
-            <p>pphaibot: ဘာအကူအညီပေးရမလဲ?</p>
+            <p>AI: မင်္ဂလာပါ၊ ဘယ်လိုအကူအညီပေးရမလဲ?</p>
         </div>
         <div class="input-area">
-            <input type="text" id="userInput" placeholder="သင့်မေးခွန်းကို ရိုက်ထည့်ပါ">
-            <button onclick="sendMessage()">ပို့မည်</button>
+            <button id="startVoice">အသံနဲ့ စကားပြော</button>
+            <button id="stopVoice">အသံရပ်မယ်</button>
         </div>
     </div>
 
     <script>
-        async function sendMessage() {
-            let userInput = document.getElementById("userInput").value;
-            let chatBox = document.getElementById("chatBox");
+        const chatBox = document.getElementById('chatBox');
+        const startVoiceBtn = document.getElementById('startVoice');
+        const stopVoiceBtn = document.getElementById('stopVoice');
 
-            // သုံးစွဲသူရဲ့ စာသားကို ပြခြင်း
-            if (userInput.trim() !== "") {
-                chatBox.innerHTML += `<p>သင်: ${userInput}</p>`;
-                chatBox.innerHTML += `<p>pphaibot: ပြန်စာကို စဉ်းစားနေပါတယ်...</p>`;
-                chatBox.scrollTop = chatBox.scrollHeight; // အောက်ဆုံးကို အလိုအလျောက် ရွှေ့ပေးခြင်း
-                document.getElementById("userInput").value = ""; // အင်ပွတ်ကို ရှင်းခြင်း
+        // Speech Recognition (အသံကနေ စာသားပြောင်းဖို့)
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = SpeechRecognition ? new SpeechRecognition() : null;
 
-                // Hugging Face API ကို ခေါ်ခြင်း
-                try {
-                    const response = await fetch(
-                        "https://api-inference.huggingface.co/models/gpt2", // GPT-2 မော်ဒယ်
-                        {
-                            method: "POST",
-                            headers: {
-                                "Authorization": "Bearer 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", // သင့် API key အသစ်
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify({ inputs: userInput })
-                        }
-                    );
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    let aiReply = data[0]?.generated_text || "တောင်းပန်ပါတယ်၊ ပြန်စာမထုတ်နိုင်ခဲ့ပါ။";
+        // Speech Synthesis (စာသားကနေ အသံထုတ်ဖို့)
+        const synth = window.speechSynthesis;
 
-                    // API က ပြန်လာတဲ့ စာသားကို ပြခြင်း
-                    chatBox.innerHTML = chatBox.innerHTML.replace(
-                        "pphaibot: ပြန်စာကို စဉ်းစားနေပါတယ်...",
-                        `pphaibot: ${aiReply}`
-                    );
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                } catch (error) {
-                    console.error("Error:", error); // အမှားကို console မှာ ပြခြင်း
-                    chatBox.innerHTML += `<p>pphaibot: ချိတ်ဆက်မှု အမှားအယွင်းရှိနေပါတယ် - ${error.message}</p>`;
-                }
-            }
+        if (recognition) {
+            recognition.lang = 'my-MM'; // မြန်မာဘာသာစကား (အလုပ်မလုပ်နိုင်တာမျိုးရှိနိုင်)
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            startVoiceBtn.addEventListener('click', () => {
+                recognition.start();
+                chatBox.innerHTML += '<p>AI: အသံကို နားထောင်နေပါတယ်...</p>';
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+
+            recognition.onresult = (event) => {
+                const userSpeech = event.results[0][0].transcript;
+                chatBox.innerHTML += `<p>သင်: ${userSpeech}</p>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // AI ရဲ့ ပြန်စာ (ဥပမာအနေနဲ့ ရိုးရှင်းတဲ့ ပြန်စာ)
+                const aiResponse = `သင်ပြောတာက "${userSpeech}" မှန်လား? ဘာလုပ်ပေးရမလဲ?`;
+                chatBox.innerHTML += `<p>AI: ${aiResponse}</p>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // AI ပြန်စာကို အသံထုတ်ပေးမယ်
+                const utterance = new SpeechSynthesisUtterance(aiResponse);
+                utterance.lang = 'en-US'; // မြန်မာလို မထောက်ပံ့တာမို့ English သုံးထားတယ်
+                synth.speak(utterance);
+            };
+
+            recognition.onerror = (event) => {
+                chatBox.innerHTML += `<p>AI: အသံမှတ်သားမှု မအောင်မြင်ပါ - ${event.error}</p>`;
+            };
+
+            stopVoiceBtn.addEventListener('click', () => {
+                recognition.stop();
+                chatBox.innerHTML += '<p>AI: အသံနားထောင်တာ ရပ်လိုက်ပါပြီ။</p>';
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        } else {
+            chatBox.innerHTML += '<p>AI: ဒီဘရောက်ဆာမှာ အသံမှတ်သားမှု မရှိပါ။</p>';
         }
-
-        // Enter ခလုတ်နဲ့ ပို့နိုင်အောင် ထည့်ပေးခြင်း
-        document.getElementById("userInput").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                sendMessage();
-            }
-        });
     </script>
 </body>
 </html>
