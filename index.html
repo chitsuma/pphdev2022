@@ -118,6 +118,10 @@
         // Speech Synthesis Setup
         const synth = window.speechSynthesis;
 
+        // API Key and Endpoint
+        const API_KEY = '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';
+        const API_URL = 'https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill';
+
         if (recognition) {
             recognition.lang = 'en-US'; // မြန်မာလို မထောက်ပံ့တာမို့ English သုံးထားတယ်
             recognition.continuous = false;
@@ -130,16 +134,10 @@
             });
 
             // Handle Voice Input
-            recognition.onresult = (event) => {
+            recognition.onresult = async (event) => {
                 const userSpeech = event.results[0][0].transcript;
                 addMessage(`သင်: ${userSpeech}`, 'user-message');
-
-                // AI Response (ဥပမာအနေနဲ့ ရိုးရှင်းတဲ့ ပြန်စာ)
-                const aiResponse = `သင်ပြောတာက "${userSpeech}" မှန်လား? ဘာလုပ်ပေးရမလဲ?`;
-                addMessage(`PPHBOTAI: ${aiResponse}`, 'ai-message');
-
-                // Speak AI Response
-                speak(aiResponse);
+                await getAIResponse(userSpeech);
             };
 
             recognition.onerror = (event) => {
@@ -155,13 +153,11 @@
         }
 
         // Send Text Input
-        sendTextBtn.addEventListener('click', () => {
+        sendTextBtn.addEventListener('click', async () => {
             const userText = textInput.value.trim();
             if (userText) {
                 addMessage(`သင်: ${userText}`, 'user-message');
-                const aiResponse = `သင်ပြောတာက "${userText}" မှန်လား? ဘာလုပ်ပေးရမလဲ?`;
-                addMessage(`PPHBOTAI: ${aiResponse}`, 'ai-message');
-                speak(aiResponse);
+                await getAIResponse(userText);
                 textInput.value = '';
             }
         });
@@ -172,6 +168,31 @@
                 sendTextBtn.click();
             }
         });
+
+        // Fetch AI Response from Hugging Face
+        async function getAIResponse(inputText) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ inputs: inputText })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const aiResponse = data[0]?.generated_text || 'တောင်းပန်ပါတယ်၊ ပြန်စာမထုတ်နိုင်ခဲ့ပါ။';
+                addMessage(`PPHBOTAI: ${aiResponse}`, 'ai-message');
+                speak(aiResponse);
+            } catch (error) {
+                addMessage(`PPHBOTAI: ချိတ်ဆက်မှု အမှားအယွင်းရှိနေပါတယ် - ${error.message}`, 'ai-message');
+            }
+        }
 
         // Helper Functions
         function addMessage(text, className) {
