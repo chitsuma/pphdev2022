@@ -118,9 +118,10 @@
         // Speech Synthesis Setup
         const synth = window.speechSynthesis;
 
-        // API Key and Endpoint
+        // API Key and Endpoint with Proxy
         const API_KEY = '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';
         const API_URL = 'https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill';
+        const PROXY_URL = 'https://cors-anywhere.herokuapp.com/'; // CORS ပြဿနာဖြေရှင်းဖို့ proxy
 
         if (recognition) {
             recognition.lang = 'en-US'; // မြန်မာလို မထောက်ပံ့တာမို့ English သုံးထားတယ်
@@ -169,10 +170,10 @@
             }
         });
 
-        // Fetch AI Response from Hugging Face
+        // Fetch AI Response from Hugging Face via Proxy
         async function getAIResponse(inputText) {
             try {
-                const response = await fetch(API_URL, {
+                const response = await fetch(PROXY_URL + API_URL, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${API_KEY}`,
