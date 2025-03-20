@@ -111,30 +111,24 @@
         const startVoiceBtn = document.getElementById('startVoice');
         const stopVoiceBtn = document.getElementById('stopVoice');
 
-        // Speech Recognition Setup
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = SpeechRecognition ? new SpeechRecognition() : null;
-
-        // Speech Synthesis Setup
         const synth = window.speechSynthesis;
 
-        // API Key and Endpoint with Proxy
         const API_KEY = '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';
         const API_URL = 'https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill';
-        const PROXY_URL = 'https://cors-anywhere.herokuapp.com/'; // CORS ပြဿနာဖြေရှင်းဖို့ proxy
+        const PROXY_URL = 'https://cors-anywhere.herokuapp.com/';
 
         if (recognition) {
-            recognition.lang = 'en-US'; // မြန်မာလို မထောက်ပံ့တာမို့ English သုံးထားတယ်
+            recognition.lang = 'en-US';
             recognition.continuous = false;
             recognition.interimResults = false;
 
-            // Start Voice Recognition
             startVoiceBtn.addEventListener('click', () => {
                 recognition.start();
                 addMessage('PPHBOTAI: အသံကို နားထောင်နေပါတယ်...', 'ai-message');
             });
 
-            // Handle Voice Input
             recognition.onresult = async (event) => {
                 const userSpeech = event.results[0][0].transcript;
                 addMessage(`သင်: ${userSpeech}`, 'user-message');
@@ -153,7 +147,6 @@
             addMessage('PPHBOTAI: ဒီဘရောက်ဆာမှာ အသံမှတ်သားမှု မရှိပါ။', 'ai-message');
         }
 
-        // Send Text Input
         sendTextBtn.addEventListener('click', async () => {
             const userText = textInput.value.trim();
             if (userText) {
@@ -163,14 +156,12 @@
             }
         });
 
-        // Enter နဲ့ ပို့လို့ ရအောင်
         textInput.addEventListener('keypress', (event) => {
             if (event.key === 'Enter') {
                 sendTextBtn.click();
             }
         });
 
-        // Fetch AI Response from Hugging Face via Proxy
         async function getAIResponse(inputText) {
             try {
                 const response = await fetch(PROXY_URL + API_URL, {
@@ -195,7 +186,6 @@
             }
         }
 
-        // Helper Functions
         function addMessage(text, className) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `chat-message ${className}`;
@@ -206,7 +196,7 @@
 
         function speak(text) {
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US'; // မြန်မာလို မရှိတာမို့ English သုံးထားတယ်
+            utterance.lang = 'en-US';
             synth.speak(utterance);
         }
     </script>
