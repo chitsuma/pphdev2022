@@ -3,44 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Walone Voice Chat</title>
+    <title>PPHBOTAI Voice Chat</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f4f4f4;
+            background-color: #f0f2f5;
+            color: #333;
         }
         .chat-container {
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto;
             background: white;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
         }
         .chat-box {
-            height: 300px;
+            height: 400px;
             overflow-y: auto;
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
             background: #fafafa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .chat-message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            margin-left: auto;
+        }
+        .ai-message {
+            background-color: #e9ecef;
+            color: #333;
         }
         .input-area {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
         }
         button {
             padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
             border: none;
             border-radius: 5px;
+            color: white;
             cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
+            font-size: 16px;
+            transition: background-color 0.3s;
         }
         #startVoice {
             background-color: #28a745;
@@ -48,70 +76,116 @@
         #startVoice:hover {
             background-color: #218838;
         }
+        #stopVoice {
+            background-color: #dc3545;
+        }
+        #stopVoice:hover {
+            background-color: #c82333;
+        }
+        #sendText {
+            background-color: #007bff;
+        }
+        #sendText:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
     <div class="chat-container">
-        <h1>Walone Voice Chat</h1>
+        <h1>PPHBOTAI Voice Chat</h1>
         <div class="chat-box" id="chatBox">
-            <p>AI: မင်္ဂလာပါ၊ ဘယ်လိုအကူအညီပေးရမလဲ?</p>
+            <div class="chat-message ai-message">PPHBOTAI: မင်္ဂလာပါ၊ ဘယ်လိုအကူအညီပေးရမလဲ?</div>
         </div>
         <div class="input-area">
-            <button id="startVoice">အသံနဲ့ စကားပြော</button>
-            <button id="stopVoice">အသံရပ်မယ်</button>
+            <input type="text" id="textInput" placeholder="စာသားရိုက်ပါ...">
+            <button id="sendText">ပို့မယ်</button>
+            <button id="startVoice">အသံပြော</button>
+            <button id="stopVoice">အသံရပ်</button>
         </div>
     </div>
 
     <script>
         const chatBox = document.getElementById('chatBox');
+        const textInput = document.getElementById('textInput');
+        const sendTextBtn = document.getElementById('sendText');
         const startVoiceBtn = document.getElementById('startVoice');
         const stopVoiceBtn = document.getElementById('stopVoice');
 
-        // Speech Recognition (အသံကနေ စာသားပြောင်းဖို့)
+        // Speech Recognition Setup
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = SpeechRecognition ? new SpeechRecognition() : null;
 
-        // Speech Synthesis (စာသားကနေ အသံထုတ်ဖို့)
+        // Speech Synthesis Setup
         const synth = window.speechSynthesis;
 
         if (recognition) {
-            recognition.lang = 'my-MM'; // မြန်မာဘာသာစကား (အလုပ်မလုပ်နိုင်တာမျိုးရှိနိုင်)
+            recognition.lang = 'en-US'; // မြန်မာလို မထောက်ပံ့တာမို့ English သုံးထားတယ်
             recognition.continuous = false;
             recognition.interimResults = false;
 
+            // Start Voice Recognition
             startVoiceBtn.addEventListener('click', () => {
                 recognition.start();
-                chatBox.innerHTML += '<p>AI: အသံကို နားထောင်နေပါတယ်...</p>';
-                chatBox.scrollTop = chatBox.scrollHeight;
+                addMessage('PPHBOTAI: အသံကို နားထောင်နေပါတယ်...', 'ai-message');
             });
 
+            // Handle Voice Input
             recognition.onresult = (event) => {
                 const userSpeech = event.results[0][0].transcript;
-                chatBox.innerHTML += `<p>သင်: ${userSpeech}</p>`;
-                chatBox.scrollTop = chatBox.scrollHeight;
+                addMessage(`သင်: ${userSpeech}`, 'user-message');
 
-                // AI ရဲ့ ပြန်စာ (ဥပမာအနေနဲ့ ရိုးရှင်းတဲ့ ပြန်စာ)
+                // AI Response (ဥပမာအနေနဲ့ ရိုးရှင်းတဲ့ ပြန်စာ)
                 const aiResponse = `သင်ပြောတာက "${userSpeech}" မှန်လား? ဘာလုပ်ပေးရမလဲ?`;
-                chatBox.innerHTML += `<p>AI: ${aiResponse}</p>`;
-                chatBox.scrollTop = chatBox.scrollHeight;
+                addMessage(`PPHBOTAI: ${aiResponse}`, 'ai-message');
 
-                // AI ပြန်စာကို အသံထုတ်ပေးမယ်
-                const utterance = new SpeechSynthesisUtterance(aiResponse);
-                utterance.lang = 'en-US'; // မြန်မာလို မထောက်ပံ့တာမို့ English သုံးထားတယ်
-                synth.speak(utterance);
+                // Speak AI Response
+                speak(aiResponse);
             };
 
             recognition.onerror = (event) => {
-                chatBox.innerHTML += `<p>AI: အသံမှတ်သားမှု မအောင်မြင်ပါ - ${event.error}</p>`;
+                addMessage(`PPHBOTAI: အသံမှတ်သားမှု မအောင်မြင်ပါ - ${event.error}`, 'ai-message');
             };
 
             stopVoiceBtn.addEventListener('click', () => {
                 recognition.stop();
-                chatBox.innerHTML += '<p>AI: အသံနားထောင်တာ ရပ်လိုက်ပါပြီ။</p>';
-                chatBox.scrollTop = chatBox.scrollHeight;
+                addMessage('PPHBOTAI: အသံနားထောင်တာ ရပ်လိုက်ပါပြီ။', 'ai-message');
             });
         } else {
-            chatBox.innerHTML += '<p>AI: ဒီဘရောက်ဆာမှာ အသံမှတ်သားမှု မရှိပါ။</p>';
+            addMessage('PPHBOTAI: ဒီဘရောက်ဆာမှာ အသံမှတ်သားမှု မရှိပါ။', 'ai-message');
+        }
+
+        // Send Text Input
+        sendTextBtn.addEventListener('click', () => {
+            const userText = textInput.value.trim();
+            if (userText) {
+                addMessage(`သင်: ${userText}`, 'user-message');
+                const aiResponse = `သင်ပြောတာက "${userText}" မှန်လား? ဘာလုပ်ပေးရမလဲ?`;
+                addMessage(`PPHBOTAI: ${aiResponse}`, 'ai-message');
+                speak(aiResponse);
+                textInput.value = '';
+            }
+        });
+
+        // Enter နဲ့ ပို့လို့ ရအောင်
+        textInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendTextBtn.click();
+            }
+        });
+
+        // Helper Functions
+        function addMessage(text, className) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${className}`;
+            messageDiv.textContent = text;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US'; // မြန်မာလို မရှိတာမို့ English သုံးထားတယ်
+            synth.speak(utterance);
         }
     </script>
 </body>
